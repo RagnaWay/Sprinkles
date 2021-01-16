@@ -1,1 +1,2 @@
 # Sprinkles
+A discord bot
