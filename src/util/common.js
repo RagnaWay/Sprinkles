@@ -1,15 +1,15 @@
 import fs from 'fs';
 import Discord from 'discord.js';
-import { BOSS_DATA_DIRECTORY, BOSS_HOLD_DIRECTORY } from '../globals/constants';
+import { BOSS_DATA_DIRECTORY } from '../globals/constants';
 import moment from 'moment';
 
 // * parameters = time
 // * returns a number separated with commas
-export const numberWithCommas = (x) => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+export const addNumberWithCommas = (x) => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
 // * parameters = time
-// * converts seconds into minutes or hours
-export const secondsToHms = (time) => {
+// * returns the converted seconds into minutes or hours
+export const convertSecondstoHMS = (time) => {
   time = Number(time);
   var h = Math.floor(time / 3600);
   var m = Math.floor((time % 3600) / 60);
@@ -30,172 +30,180 @@ export const readFile = (filename) => {
   const data = fs.readFileSync(filename);
   const result = JSON.parse(data);
   return result;
-}
+};
 
 // * parameters = user input
 // * returns TRUE if boss alias is found in the db
-export const aliasChecker = (param) => {
+export const checkAlias = (input) => {
   let isFound = false;
   let bossList = readFile(BOSS_DATA_DIRECTORY);
 
   for (let i = 0; i < bossList.bosses.length; i++) {
     for (let j = 0; j < bossList.bosses[i].alias.length; j++) {
-      if (bossList.bosses[i].alias[j].toLowerCase() === param.toLowerCase().trim()) {
+      if (bossList.bosses[i].alias[j].toLowerCase() === input.toLowerCase().trim()) {
         isFound = true;
       }
     }
   }
   return isFound;
-}
+};
 
-// * parameters = user input and its result checked by aliasChecker()
-// * returns TRUE if input is correct 
-export const inputChecker = (param, aliasCheckerResult) => {
+// * parameters = user input and its result checked by checkAlias()
+// * returns TRUE if input is correct
+export const checkInput = (input, checkAliasResult) => {
   let isValidInput = true;
 
-  if (param.length < 3 && !aliasCheckerResult) {
+  if (input.length < 3 && !checkAliasResult) {
     isValidInput = false;
   }
   return isValidInput;
-
-}
+};
 
 // * parameters = boss info
-// * returns embed
-export const createBossInfoEmbed = ({bossName, HP, race, property, location, minRespawnTimeInSeconds, maxRespawnTimeInSeconds, imageUrl, alias}) => {
-  const bossEmbed = new Discord.MessageEmbed()
-  .setColor('#0xD8BFDD')
-  .setTitle(bossName)
-  .setDescription(`Alias: [${alias.join(', ')}]`)
-  .setThumbnail(imageUrl)
-  .addFields(
-    { name: 'HP', value: numberWithCommas(HP) || '--' },
-    { name: 'Location', value: location || '--' },
-    { name: 'Race', value: race || '--', inline: true },
-    { name: '\u200B', value: '\u200B', inline: true },
-    { name: 'Property', value: property || '--', inline: true },
-    { name: 'Min. Respawn', value: secondsToHms(minRespawnTimeInSeconds) || '--', inline: true },
-    { name: '\u200B', value: '\u200B', inline: true },
-    { name: 'Max. Respawn', value: secondsToHms(maxRespawnTimeInSeconds) || '--', inline: true },
-  );
-  return bossEmbed;
-}
+// * returns embed with boss info
+export const createBossInfoEmbed = ({
+  bossName,
+  HP,
+  race,
+  property,
+  location,
+  minRespawnTimeScheduleInSeconds,
+  maxRespawnTimeScheduleInSeconds,
+  imageUrl,
+  alias,
+}) => {
+  const bossInfoEmbed = new Discord.MessageEmbed()
+    .setColor('#0xD8BFDD')
+    .setTitle(bossName)
+    .setDescription(`**Alias:** ${alias.join(', ')}`)
+    .setThumbnail(imageUrl)
+    .addFields(
+      { name: 'HP', value: addNumberWithCommas(HP) || '--' },
+      { name: 'Location', value: location || '--' },
+      { name: 'Race', value: race || '--', inline: true },
+      { name: '\u200B', value: '\u200B', inline: true },
+      { name: 'Property', value: property || '--', inline: true },
+      {
+        name: 'Min. Respawn',
+        value: convertSecondstoHMS(minRespawnTimeScheduleInSeconds) || '--',
+        inline: true,
+      },
+      { name: '\u200B', value: '\u200B', inline: true },
+      {
+        name: 'Max. Respawn',
+        value: convertSecondstoHMS(maxRespawnTimeScheduleInSeconds) || '--',
+        inline: true,
+      },
+    );
+  return bossInfoEmbed;
+};
 
+// * parameters = message, boss data, isFound
+// * returns isFound result and sends boss info embed
 export const sendBossInfoEmbed = (message, data, isFound) => {
   message.channel.send(createBossInfoEmbed(data));
-  return isFound = true;
-}
+  isFound = true;
+  return isFound;
+};
 
 // * parameters = boss info
-// * returns embed
-export const createBossAddedEmbed = ({bossName, location, imageUrl}, min, max) => {
-  const bossEmbed = new Discord.MessageEmbed()
-  .setColor('#0xf44336')
-  .setTitle(bossName)
-  .setThumbnail(imageUrl)
-  .addFields(
-    { name: 'Location', value: location || '--' },
-    { name: 'Min. Respawn', value: min || '--', inline: true },
-    { name: '\u200B', value: '\u200B', inline: true },
-    { name: 'Max. Respawn', value: max || '--', inline: true }
-  )
-  .setFooter(`Time of Death: ${getTime()}`, "https://emoji.gg/assets/emoji/9468_ghostplus.gif");
-  return bossEmbed;
-}
+// * returns embed with boss info and its respawn times
+export const createBossAddedEmbed = (
+  { bossName, location, imageUrl },
+  minRespawnTimeCalendarFormat,
+  maxRespawnTimeCalendarFormat,
+) => {
+  const bossAddedEmbed = new Discord.MessageEmbed()
+    .setColor('#0xf44336')
+    .setTitle(bossName)
+    .setThumbnail(imageUrl)
+    .addFields(
+      { name: 'Location', value: location || '--' },
+      { name: 'Min. Respawn', value: minRespawnTimeCalendarFormat || '--', inline: true },
+      { name: '\u200B', value: '\u200B', inline: true },
+      { name: 'Max. Respawn', value: maxRespawnTimeCalendarFormat || '--', inline: true },
+    )
+    .setFooter(
+      `Time of Death: ${getCurrentTimeInHMAFormat()}`,
+      'https://emoji.gg/assets/emoji/9468_ghostplus.gif',
+    );
+  return bossAddedEmbed;
+};
 
-export const sendBossAddedEmbed = (message, data, min, max, isFound) => {
-  message.channel.send(createBossAddedEmbed(data, min, max));
-  message.channel.send(`I will remind you in **${secondsToHms(data.minRespawnTimeInSeconds)}**!`);
-  return isFound = true;
-}
+// * parameters = message, boss data, min respawn time, max respawn time, isFound
+// * returns isFound result and sends boss info embed
+export const sendBossAddedEmbed = (
+  message,
+  data,
+  minRespawnTimeCalendarFormat,
+  maxRespawnTimeCalendarFormat,
+  isFound,
+) => {
+  message.channel.send(
+    createBossAddedEmbed(data, minRespawnTimeCalendarFormat, maxRespawnTimeCalendarFormat),
+  );
+  message.channel.send(
+    `MVP added successfully!\nI will remind you in **${convertSecondstoHMS(
+      data.minRespawnTimeScheduleInSeconds,
+    )}**!`,
+  );
+  isFound = true;
+  return isFound;
+};
+
 // * returns current time in hh:mm A format
-export const getTime = () => {
+export const getCurrentTimeInHMAFormat = () => {
   let currentTime = moment();
-  return moment(currentTime).format("hh:mm A");
-}
+  return moment(currentTime).format('hh:mm A');
+};
 
+// * returns current time in default format
 export const getCurrentTime = () => {
   let currentTime = moment();
   return moment(currentTime);
-}
+};
 
-export const getTimestamp = (time) => {
-  return moment(time).unix();
-}
+// * returns time in unix format
+export const convertToTimestamp = (time) => moment(time).unix();
 
-export const timeCalendarFormat = (time) => {
-  return moment.unix(time).calendar()
-}
+// * parameters = time in unix
+// * returns time in calendar format
+export const convertUnixTimeToCalendarFormat = (time) => moment.unix(time).calendar();
 
-export const timeFormatHM = (time) => {
-  return moment.unix(time).format("hh:mm A");
-}
+// * parameters = time in unix
+// * returns time in HMA format
+export const convertUnixTimeToHMAFormat = (time) => moment.unix(time).format('hh:mm A');
 
-// * parameters = time
-// * returns = added time
-export const addTime = (time) => {
-  return moment().add(time,'seconds').calendar();
-}
+// * parameters = time in seconds
+// * returns = added time in calendar format
+export const addTimeInSecondsToCalendarFormat = (time) => moment().add(time, 'seconds').calendar();
 
-export const addTime2 = (time) => {
-  return moment().add(time,'seconds').unix();
-}
+// * parameters = time in seconds
+// * returns = added time in unix format
+export const addTimeInSecondsToUnixFormat = (time) => moment().add(time, 'seconds').unix();
 
 // * parameters = time in seconds
 // * returns time in milliseconds
-export const convertSecondsToMS = (seconds) => {
-  return seconds * 1000;
-}
+export const convertSecondsToMS = (seconds) => seconds * 1000;
 
-export const createReminder = (message, bossList, min, max) => {
-  /*setTimeout(function(){
-    const remindEmbed = new Discord.MessageEmbed()
-    .setColor('#0x43a047')
-    .setTitle(`${bossName} respawn time has started! `)
-    .setThumbnail(imageUrl)
-    .addFields(
-      { name: 'Min. Respawn', value: min || '--', inline: true },
-      { name: 'Max. Respawn', value: max || '--', inline: true }
-    )
-    .setFooter(`Current Time: ${getTime()}`, "https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/microsoft/209/alarm-clock_23f0.png");
-    message.channel.send(remindEmbed);
-  }, convertSecondsToMS(minRespawnTimeInSeconds));*/
- 
-
-  setInterval(function(){
-    let currentTime = getTimestamp(getCurrentTime());
-    for(let i = 0; i < bossList.bosses.length; i++) {
-      if(bossList.bosses[i].min <= currentTime) {
-        const remindEmbed = new Discord.MessageEmbed()
-        .setColor('#0x43a047')
-        .setTitle(`${bossList.bosses[i].bossName} respawn time has started! `)
-        .setThumbnail(bossList.bosses[i].imageUrl)
-        .addFields(
-          { name: 'Min. Respawn', value: min || '--', inline: true },
-          { name: 'Max. Respawn', value: max || '--', inline: true }
-        )
-        .setFooter(`Current Time: ${getTime()}`, "https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/microsoft/209/alarm-clock_23f0.png");
-        message.channel.send(remindEmbed);
-      }
-    }
-  }, 1000);
-}
-
+// * parameters = file to be written, and data to be written
 export const writeFile = (filename, data) => {
   let jsonString = JSON.stringify(data);
-  fs.writeFile(filename, jsonString, err => {
+  fs.writeFile(filename, jsonString, (err) => {
     if (err) {
-        console.log('Error writing file', err)
+      console.log('Error in writing file!', err);
     } else {
-        console.log('Successfully wrote file')
+      console.log(`Successfully wrote the file in ${filename}`);
     }
-})
-}
+  });
+};
 
-export const createBossList = ({bossName}, min, max, message) => {
+// * parameters = boss data, message
+// * sends the boss list with scheduled respawn times
+export const createBossList = ({ bossName }, min, max, message) => {
   message.channel.send(`${bossName} | **Min** ${min} | **Max** ${max} \n`);
-}
+};
 
-export const sort = (arr) => {
-  return arr.sort((a, b) => (a.min > b.min) ? 1 : -1 )
-}
+// * parameter = array
+// * sends a sorted array
+export const sortArray = (arr) => arr.sort((a, b) => (a.min > b.min ? 1 : -1));

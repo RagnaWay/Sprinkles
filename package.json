@@ -38,5 +38,10 @@
     "flow-bin": "^0.127.0",
     "nodeman": "^1.1.2",
     "prettier": "^2.0.5"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "data/*"
+    ]
   }
 }

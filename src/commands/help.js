@@ -1,11 +1,17 @@
 export const name = 'help';
-export const description = 'To check available bot commands';
+export const description = 'To check the available bot commands';
 
 export const execute = (message, args) => {
-  message.channel.send({ embed: exampleEmbed });
+  if (args.length === 0) {
+    message.channel.send({ embed: helpEmbed });
+  } else {
+    message.channel.send(
+      'Command **does not exist**! Please enter `$help` for the list of bot commands.',
+    );
+  }
 };
 
-const exampleEmbed = {
+const helpEmbed = {
   color: 0xd8bfdd,
   title: 'Sprinkles Bot Commands',
   thumbnail: {
@@ -14,20 +20,20 @@ const exampleEmbed = {
   fields: [
     {
       name: '$help',
-      value: 'To view all available bot commands',
+      value: 'To view all the available bot commands',
     },
     {
       name: '$info <bossname>',
-      value: "To view the information of a specific boss",
+      value: 'To view the information of a specific boss',
     },
     {
       name: '$mvp add <bossname>',
       value:
-        'To add a boss into the MVP list. \nThis will also set a reminder on the same channel once the boss has respawned',
+        "To add a boss into the MVP list \nThis will also set a reminder on the boss' scheduled respawn time",
     },
     {
       name: '$mvp list',
-      value: 'To view the list of the current MVPs being held',
+      value: 'To view the list of the current MVPs with a respawn time schedule',
     },
     {
       name: '$mvp clear',

@@ -7,4 +7,3 @@ export const DEFAULT_COMMAND_PREFIX = '$';
 
 export const COMMANDS_DIRECTORY = './src/commands';
 export const BOSS_DATA_DIRECTORY = './data/bossList.json';
-export const BOSS_HOLD_DIRECTORY = './data/bossHoldList.json';

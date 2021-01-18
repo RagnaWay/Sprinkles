@@ -1,5 +1,4 @@
-import Discord from 'discord.js';
-import { aliasChecker, inputChecker, sendBossInfoEmbed } from '../util/common';
+import { checkAlias, checkInput, sendBossInfoEmbed } from '../util/common';
 
 export const name = 'info';
 export const description = 'To check boss information';
@@ -10,12 +9,15 @@ export const execute = (message, args, bossList) => {
   let isValidInput = false;
   let isValidAlias = true;
 
-  isValidAlias = aliasChecker(input);
-  isValidInput = inputChecker(input, isValidAlias);
-  
+  isValidAlias = checkAlias(input);
+  isValidInput = checkInput(input, isValidAlias);
+
   if (isValidInput) {
     for (let i = 0; i < bossList.bosses.length; i++) {
-      if (bossList.bosses[i].bossName.toLowerCase().includes(input.toLowerCase().trim()) && !isValidAlias) {
+      if (
+        bossList.bosses[i].bossName.toLowerCase().includes(input.toLowerCase().trim()) &&
+        !isValidAlias
+      ) {
         isFound = sendBossInfoEmbed(message, bossList.bosses[i], isFound);
       } else if (isValidAlias) {
         for (let j = 0; j < bossList.bosses[i].alias.length; j++) {
@@ -25,8 +27,7 @@ export const execute = (message, args, bossList) => {
         }
       }
     }
-  }
-  else {
+  } else {
     message.channel.send('Please enter at least **3 characters** or the correct **boss alias**');
   }
 
