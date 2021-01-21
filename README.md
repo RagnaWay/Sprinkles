@@ -27,13 +27,16 @@ To view the information of a specific boss.
 ### $mvp add <bossname>
 ![info](img/add.PNG)
 
+
 To add a boss into the MVP list.
 ![info](img/remind.PNG)
+
 
 This will also set a reminder on the boss' scheduled respawn time.
 
 ### $mvp list
 ![info](img/list.PNG)
+
 
 To view the list of the current MVPs with a respawn time schedule.
 
