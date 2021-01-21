@@ -29,6 +29,8 @@ To view the information of a specific boss.
 
 
 To add a boss into the MVP list.
+
+
 ![info](img/remind.PNG)
 
 
