@@ -21,6 +21,7 @@ To view all the available bot commands.
 ### $info <bossname>
 ![info](img/info.PNG)
 
+
 To view the information of a specific boss.
 
 ### $mvp add <bossname>
