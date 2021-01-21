@@ -19,17 +19,17 @@ $mvp clear
 To view all the available bot commands.
 
 ### $info <bossname>
-(Info)[img/info.png]
+![info](img/info.png)
 To view the information of a specific boss.
 
 ### $mvp add <bossname>
-(Info)[img/add.png]
+![info](img/add.png)
 To add a boss into the MVP list.
-(Info)[img/remind.png]
+![info](img/remind.png)
 This will also set a reminder on the boss' scheduled respawn time.
 
 ### $mvp list
-(Info)[img/list.png]
+![info](img/list.png)
 To view the list of the current MVPs with a respawn time schedule.
 
 #### $mvp clear
