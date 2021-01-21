@@ -206,4 +206,5 @@ export const createBossList = ({ bossName }, min, max, message) => {
 
 // * parameter = array
 // * sends a sorted array
-export const sortArray = (arr) => arr.sort((a, b) => (a.min > b.min ? 1 : -1));
+export const sortArray = (arr) =>
+  arr.sort((a, b) => (a.minRespawnTime < b.minRespawnTime ? 1 : -1));
