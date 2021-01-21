@@ -18,13 +18,13 @@ $mvp clear
 ### $help
 To view all the available bot commands.
 
-### $info <bossname>
+### $info "bossname"
 ![info](img/info.PNG)
 
 
 To view the information of a specific boss.
 
-### $mvp add <bossname>
+### $mvp add "bossname"
 ![info](img/add.PNG)
 
 
