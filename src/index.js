@@ -1,17 +1,17 @@
 import Discord from 'discord.js';
-import { BOT_NAME, DEFAULT_COMMAND_PREFIX, events } from './globals/constants';
-import {
-  readFile,
-  convertToTimestamp,
-  getCurrentTime,
-  writeFile,
-  getCurrentTimeInHMAFormat,
-  convertUnixTimeToCalendarFormat,
-} from './util/common';
-import { BOSS_DATA_DIRECTORY } from './globals/constants';
+import { BOSS_DATA_DIRECTORY, BOT_NAME, DEFAULT_COMMAND_PREFIX, events } from './globals/constants';
 import * as commandManager from './util/commandManager';
+import {
+  convertToTimestamp,
+  convertUnixTimeToCalendarFormat,
+  getCurrentTime,
+  getCurrentTimeInHMAFormat,
+  readFile,
+  writeFile,
+} from './util/common';
 
 const discordClient = new Discord.Client();
+let reminderChannels = [];
 const bossList = readFile(BOSS_DATA_DIRECTORY);
 const onReady = () => {
   commandManager.loadCommands(discordClient).then(onLoad);
@@ -19,9 +19,10 @@ const onReady = () => {
 
 const onLoad = () => {
   console.log(`${BOT_NAME} is online!`);
+  checkMvpRespawnTimers();
 };
 
-const checkMvpRespawnTimers = (message) => {
+const checkMvpRespawnTimers = () => {
   setInterval(() => {
     let currentTime = convertToTimestamp(getCurrentTime());
     for (let i = 0; i < bossList.bosses.length; i++) {
@@ -46,7 +47,9 @@ const checkMvpRespawnTimers = (message) => {
             `Current Time: ${getCurrentTimeInHMAFormat()}`,
             'https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/microsoft/209/alarm-clock_23f0.png',
           );
-        message.channel.send(remindEmbed);
+        reminderChannels.forEach((channel) => {
+          channel.send(remindEmbed);
+        });
         bossList.bosses[i].deathTime = null;
         bossList.bosses[i].minRespawnTime = null;
         bossList.bosses[i].maxRespawnTime = null;
@@ -71,6 +74,13 @@ const onMessageReceived = (message) => {
     discordClient.commands.get('help').execute(message, args);
   } else if (command == 'info') {
     discordClient.commands.get('info').execute(message, args, bossList);
+  } else if (command == 'set-reminder-channel') {
+    if (reminderChannels.filter((channel) => channel.id === message.channel.id).length > 0) {
+      message.channel.send('[FAILED] MVP reminders are already being sent in this channel');
+    } else {
+      reminderChannels.push(message.channel);
+      message.channel.send('[SUCCESS] MVP reminders are now sent in this channel');
+    }
   } else {
     message.channel.send(
       'Command **does not exist**! Please enter `$help` for the list of bot commands.',
@@ -80,5 +90,4 @@ const onMessageReceived = (message) => {
 
 discordClient.once(events.READY, onReady);
 discordClient.on(events.MESSAGE, onMessageReceived);
-discordClient.on(events.MESSAGE, checkMvpRespawnTimers);
 discordClient.login(`${process.env.TOKEN}`);
